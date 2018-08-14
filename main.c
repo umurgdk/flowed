@@ -4,6 +4,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <assert.h>
 
 #define SDL_FAIL(fn) fprintf(stderr, "[ERROR] %s failed with: %s\n", fn, SDL_GetError())
 #define TTF_FAIL(fn) fprintf(stderr, "[ERROR] %s failed with: %s\n", fn, TTF_GetError())
@@ -91,15 +92,25 @@ int main() {
                                 if (cmdcx == 0)
                                     break;
 
-                                if (cmdcx == cmdline_len) {
-                                    cmdline[cmdcx-1] = '\0';
-                                    cmdcx--;
-                                    cmdline_len--;
-                                    break;
+                                // cmdline :1234c5678 len=9 cmdcx=5
+                                //
+                                if (cmdline_len - cmdcx > 0) {
+                                    memmove(cmdline+cmdcx-1, cmdline+cmdcx, cmdline_len-cmdcx);
                                 }
 
-                                memmove(cmdline+cmdcx-1, cmdline+cmdcx, cmdline_len-cmdcx);
+                                cmdline_len--;
                                 cmdcx--;
+                                cmdline[cmdline_len] = '\0';
+                                break;
+
+                            case SDLK_LEFT:
+                                if (cmdcx > 0)
+                                    cmdcx--;
+                                break;
+
+                            case SDLK_RIGHT:
+                                if (cmdcx < cmdline_len)
+                                    cmdcx++;
                                 break;
                         }
                     } else if (keymod & KMOD_CTRL) {
@@ -134,6 +145,8 @@ int main() {
                             cmdcx++;
                             chindex++;
                         }
+                    } else {
+
                     }
                     break;
                 case SDL_QUIT:
